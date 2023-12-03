@@ -1,0 +1,60 @@
+# Pranker
+Prank your minecraft players with this plugin
+
+# Installation
+Should work on most non-legacy versions, but was designed around 1.17
+
+Just put it in your plugins folder and you're done. There is no config file.
+
+# Usage
+**/prank <player> [prank/stop]**
+
+***player*** will be the player to apply the prank on (obviously)
+
+***prank*** will be the prank to apply, or ***stop*** to stop all pranks on the player
+
+Multiple pranks can be applied to a player. Pranks will be stopped when the player logs out
+
+# Overview of the pranks
+*More prank ideas are welcome :)*
+- Reach
+  - Gives the player a 6 block reach as if they were cheating
+- LagMove
+  - Occasionally teleports the player a block back creating the illusion of lag
+- NoDamage
+  - Makes the player's hits deal 0 damage
+- Cat
+  - Turns the player into a cat.
+  - This clears their inventory, applies invisibility to them, and spawns a cat which will mimic their movement and mouse inputs. The player and cat will be damageable, but will take 0 damage.
+  - When stopping the prank all above is reversed and the player gets their inventory back.
+- DropItem
+  - Makes the player occasionally drop the item(s) they are holding in their main hand
+- TNTWalk
+  - Spawns a primed tnt on the player's location whenever they move.
+  - This is client-sided only meaning the rest of the players will not see the TNT, and no blocks will be destroyed.
+  - The explosion knockback may set off "player moved too quickly" warnings, and not let the player fly with the explosion. This will result in a weird set back effect which may be unpleasant. Try it yourself to see what it looks like.
+  - I don't know if this will trigger any anticheat, but be aware that it might.
+- ChristmasHat
+  - Gives the player a fancy christmas hat :D
+  - This hat is made of particles, which may cause low fps on players with potato pc
+- Undercover
+  - Gives the player a bush disguise made of oak leaves
+  - Basically fortnite bush
+- Minigun
+  - Makes the player shoot arrows like a minigun by just holding right-click
+  - Does not deplete arrows
+  - Doesn't work properly in gamemode creative
+- Dance
+  - Forces the player to dance <img alt="catvibe" src="https://pafias.me/catvibe.gif" width="32" height="32"/>
+  - This may also drop players' fps with the particles
+  - Basically fortnite boogie bomb
+- UpsideDown
+  - Turns the player upside down
+  - May not work but i didn't feel like removing it either
+- SelfShoot
+  - Makes the player's arrow backfire when shooting an entity
+  - Which means the entity will shoot an arrow back at the player
+- MidasTouch
+  - Turns everything the player touches into gold
+  - More like: leaves a gold trail when the player walks. Also turns the block the player clicks into gold
+  - Client-sided: others won't see this, world won't be affected
