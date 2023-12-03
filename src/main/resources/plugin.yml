@@ -1,0 +1,17 @@
+name: Pranker
+version: '${project.version}'
+main: me.pafias.pranker.Pranker
+api-version: 1.13
+author: Pafias
+description: Pranker
+softdepend: [ ProtocolLib ]
+commands:
+  prank:
+    usage: /prank <player> <prank> [stop]
+    aliases: [ ]
+    description: Main prank command
+    permission: prank
+permissions:
+  prank:
+    description: Permission to use the prank command
+    default: op
