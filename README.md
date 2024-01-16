@@ -7,7 +7,7 @@ Should work on most non-legacy versions, but was designed around 1.17
 Just put it in your plugins folder and you're done. There is no config file.
 
 # Usage
-**/prank <player> [prank/stop]**
+**/prank \<player\> [prank/stop]**
 
 ***player*** will be the player to apply the prank on (obviously)
 
@@ -42,19 +42,19 @@ Multiple pranks can be applied to a player. Pranks will be stopped when the play
   - Basically fortnite bush
 - Minigun
   - Makes the player shoot arrows like a minigun by just holding right-click
-  - Does not deplete arrows
-  - Doesn't work properly in gamemode creative
+  - Does not need nor deplete arrows
 - Dance
   - Forces the player to dance <img alt="catvibe" src="https://pafias.me/catvibe.gif" width="32" height="32"/>
   - This may also drop players' fps with the particles
   - Basically fortnite boogie bomb
 - UpsideDown
   - Turns the player upside down
-  - May not work but i didn't feel like removing it either
+  - This will change their nametag to Dinnerbone because that's the only way to achieve it without client mods
 - SelfShoot
   - Makes the player's arrow backfire when shooting an entity
   - Which means the entity will shoot an arrow back at the player
+  - May not work too well, like the arrow not having enough power to hit the player back if they're too far away from the target
 - MidasTouch
   - Turns everything the player touches into gold
-  - More like: leaves a gold trail when the player walks. Also turns the block the player clicks into gold
+  - More like: turns the block under the player into a gold block when they walk. Also turns the block the player clicks into gold
   - Client-sided: others won't see this, world won't be affected
