@@ -49,7 +49,7 @@ public abstract class Prank implements Listener {
 
     public abstract void playerAdded(Victim player);
 
-    protected void addPlayer(Victim player) {
+    protected void addPlayer(Victim player) throws Exception {
         if (players.contains(player)) return;
         players.add(player);
         playerAdded(player);
@@ -57,7 +57,7 @@ public abstract class Prank implements Listener {
 
     public abstract void playerRemoved(Victim player);
 
-    protected void removePlayer(Victim player) {
+    protected void removePlayer(Victim player) throws Exception {
         if (!players.contains(player)) return;
         players.remove(player);
         playerRemoved(player);

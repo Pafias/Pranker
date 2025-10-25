@@ -3,7 +3,7 @@ package me.pafias.pranker.commands;
 import me.pafias.pranker.Pranker;
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
-import me.pafias.pranker.utils.CC;
+import me.pafias.putils.CC;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -55,14 +55,22 @@ public class PrankCommand implements CommandExecutor, TabExecutor {
             }
             if (prank.getPlayers().contains(target)) {
                 if (args.length >= 3 && args[2].equalsIgnoreCase("stop")) {
-                    plugin.getPrankManager().removePlayer(target, prank);
-                    sender.sendMessage(CC.tf("&cStopped prank %s on &b%s", prank.getName(), target.getPlayer().getName()));
+                    try {
+                        plugin.getPrankManager().removePlayer(target, prank);
+                        sender.sendMessage(CC.tf("&cStopped prank %s on &b%s", prank.getName(), target.getPlayer().getName()));
+                    } catch (Exception ex) {
+                        sender.sendMessage(CC.t("&cFailed to stop the prank ripbozo"));
+                    }
                 } else {
                     sender.sendMessage(CC.t("&cPlayer already has that prank active."));
                 }
             } else {
-                plugin.getPrankManager().addPlayer(target, prank);
-                sender.sendMessage(CC.tf("&aActivated prank &b%s &aon &d%s", prank.getName(), target.getPlayer().getName()));
+                try {
+                    plugin.getPrankManager().addPlayer(target, prank);
+                    sender.sendMessage(CC.tf("&aActivated prank &b%s &aon &d%s", prank.getName(), target.getPlayer().getName()));
+                } catch (Exception e) {
+                    sender.sendMessage(CC.t("&cFailed to activate the prank"));
+                }
             }
         }
         return true;

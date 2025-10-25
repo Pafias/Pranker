@@ -1,10 +1,10 @@
 name: Pranker
 version: '${project.version}'
 main: me.pafias.pranker.Pranker
-api-version: 1.13
+api-version: 1.17
 author: Pafias
 description: Pranker
-softdepend: [ ProtocolLib ]
+softdepend: [ packetevents ]
 commands:
   prank:
     usage: /prank <player> <prank> [stop]

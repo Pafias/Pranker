@@ -29,10 +29,10 @@ public class MidasTouch extends Prank {
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
-        if (!getBukkitPlayers().contains(event.getPlayer())) return;
         Block block = event.getPlayer().getLocation().getBlock().getRelative(BlockFace.DOWN);
         if (block.isEmpty()) return;
         if (block.isLiquid()) return;
+        if (!getBukkitPlayers().contains(event.getPlayer())) return;
         BlockData oldData = block.getBlockData();
         BlockData newData = plugin.getServer().createBlockData(Material.GOLD_BLOCK);
         event.getPlayer().sendBlockChange(block.getLocation(), newData);

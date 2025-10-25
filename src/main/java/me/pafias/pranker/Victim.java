@@ -24,7 +24,13 @@ public class Victim {
     }
 
     public void stopPranks() {
-        plugin.getPrankManager().getPranks().forEach(prank -> plugin.getPrankManager().removePlayer(this, prank));
+        plugin.getPrankManager().getPranks().forEach(prank -> {
+            try {
+                plugin.getPrankManager().removePlayer(this, prank);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
 }

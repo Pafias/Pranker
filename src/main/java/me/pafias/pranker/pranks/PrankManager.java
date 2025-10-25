@@ -29,6 +29,10 @@ public class PrankManager {
         pranks.add(new UpsideDown());
         pranks.add(new SelfShoot());
         pranks.add(new MidasTouch());
+        pranks.add(new WitnessProtection());
+        pranks.add(new Swim());
+        pranks.add(new Demo());
+        pranks.add(new Credits());
     }
 
     private final Set<Prank> pranks;
@@ -57,11 +61,11 @@ public class PrankManager {
         return pranks.stream().filter(p -> p.getPlayers().stream().map(Victim::getPlayer).anyMatch(pp -> pp.getUniqueId().equals(player.getUniqueId()))).collect(Collectors.toSet());
     }
 
-    public void addPlayer(Victim player, Prank prank) {
+    public void addPlayer(Victim player, Prank prank) throws Exception {
         prank.addPlayer(player);
     }
 
-    public void removePlayer(Victim player, Prank prank) {
+    public void removePlayer(Victim player, Prank prank) throws Exception {
         prank.removePlayer(player);
     }
 
