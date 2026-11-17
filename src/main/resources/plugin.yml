@@ -7,7 +7,7 @@ description: Pranker
 softdepend: [ packetevents ]
 commands:
   prank:
-    usage: /prank <player> <prank> [stop]
+    usage: /prank <player> <prank> [options|stop]
     aliases: [ ]
     description: Main prank command
     permission: prank

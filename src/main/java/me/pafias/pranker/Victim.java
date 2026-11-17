@@ -1,5 +1,6 @@
 package me.pafias.pranker;
 
+import lombok.Getter;
 import me.pafias.pranker.pranks.Prank;
 import org.bukkit.entity.Player;
 
@@ -9,28 +10,19 @@ public class Victim {
 
     private final Pranker plugin = Pranker.get();
 
+    @Getter
     private final Player player;
 
     public Victim(Player player) {
         this.player = player;
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
     public Collection<Prank> getActivePranks() {
-        return plugin.getPrankManager().getPranks(this);
+        return plugin.getPrankManager().getActivePranks(this);
     }
 
     public void stopPranks() {
-        plugin.getPrankManager().getPranks().forEach(prank -> {
-            try {
-                plugin.getPrankManager().removePlayer(this, prank);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        plugin.getPrankManager().removeAll(this);
     }
 
 }

@@ -1,66 +1,96 @@
 package me.pafias.pranker.pranks;
 
+import lombok.Getter;
 import me.pafias.pranker.Pranker;
 import me.pafias.pranker.Victim;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+@Getter
 public abstract class Prank implements Listener {
 
-    public final Pranker plugin = Pranker.get();
+    protected final Pranker plugin = Pranker.get();
 
-    private final String id;
-    private final String name;
-    private final String description;
+    private final Pranks type;
+    private final Victim victim;
+    private final String[] args;
 
-    private final Set<Victim> players;
-
-    public Prank(String id, String name, String description) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        players = new HashSet<>();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    protected Prank(Pranks type, Victim victim) {
+        this.type = type;
+        this.victim = victim;
+        this.args = null;
     }
 
-    public String getID() {
-        return id;
+    protected Prank(Pranks type, Victim victim, @NotNull String... args) {
+        this.type = type;
+        this.victim = victim;
+        this.args = args;
+    }
+
+    public String getId() {
+        return type.getId();
     }
 
     public String getName() {
-        return name;
+        return type.getName();
     }
 
     public String getDescription() {
-        return description;
+        return type.getDescription();
     }
 
-    public Set<Victim> getPlayers() {
-        return players;
+    public Player getPlayer() {
+        return victim != null ? victim.getPlayer() : null;
     }
 
-    public Set<Player> getBukkitPlayers() {
-        return getPlayers().stream().map(Victim::getPlayer).collect(Collectors.toSet());
+    protected boolean isTarget(Player player) {
+        return victim != null && victim.getPlayer().equals(player);
     }
 
-    public abstract void playerAdded(Victim player);
-
-    protected void addPlayer(Victim player) throws Exception {
-        if (players.contains(player)) return;
-        players.add(player);
-        playerAdded(player);
+    public void start() throws Exception {
+        onStart();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public abstract void playerRemoved(Victim player);
-
-    protected void removePlayer(Victim player) throws Exception {
-        if (!players.contains(player)) return;
-        players.remove(player);
-        playerRemoved(player);
+    public void stop() throws Exception {
+        HandlerList.unregisterAll(this);
+        onStop();
     }
+
+    protected boolean hasArgs() {
+        return args != null && args.length > 0;
+    }
+
+    protected int intArg(int index, int def, int min, int max, String name) {
+        if (args == null || args.length <= index)
+            return def;
+        try {
+            final int value = Integer.parseInt(args[index]);
+            if (value < min || value > max)
+                throw new IllegalArgumentException(String.format("%s must be between %d and %d", name, min, max));
+            return value;
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(String.format("Invalid %s: %s", name, args[index]));
+        }
+    }
+
+    protected double doubleArg(int index, double def, double min, double max, String name) {
+        if (args == null || args.length <= index)
+            return def;
+        try {
+            final double value = Double.parseDouble(args[index]);
+            if (!(value >= min && value <= max))
+                throw new IllegalArgumentException(String.format("%s must be between %s and %s", name, min, max));
+            return value;
+        } catch (NumberFormatException ex) {
+            throw new IllegalArgumentException(String.format("Invalid %s: %s", name, args[index]));
+        }
+    }
+
+    public abstract void onStart() throws Exception;
+
+    public abstract void onStop() throws Exception;
 
 }

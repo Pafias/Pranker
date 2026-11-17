@@ -34,8 +34,10 @@ public final class Pranker extends JavaPlugin {
             packetHandler = new PacketHandler1_19_3(); // 1.19.3 - 1.20.2
         else if (version.isOlderThan(ServerVersion.V_1_21_3))
             packetHandler = new PacketHandler1_20_2(); // 1.20.2 - 1.21.3
+        else if (version.isOlderThan(ServerVersion.V_1_21_9))
+            packetHandler = new PacketHandler1_21_3(); // 1.21.3 - 1.21.9
         else
-            packetHandler = new PacketHandler1_21_3(); // 1.21.3 - latest
+            packetHandler = new PacketHandler1_21_9(); // 1.21.9 - latest
 
         register();
         getServer().getOnlinePlayers().forEach(p -> playerManager.addPlayer(p));
@@ -48,7 +50,7 @@ public final class Pranker extends JavaPlugin {
     private void register() {
         final PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new JoinQuitListener(plugin), plugin);
-        playerManager = new PlayerManager(plugin);
+        playerManager = new PlayerManager();
         prankManager = new PrankManager(plugin);
         getCommand("prank").setExecutor(new PrankCommand(plugin));
     }

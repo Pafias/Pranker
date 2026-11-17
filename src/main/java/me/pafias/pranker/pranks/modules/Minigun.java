@@ -2,6 +2,7 @@ package me.pafias.pranker.pranks.modules;
 
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
+import me.pafias.pranker.pranks.Pranks;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.event.EventHandler;
@@ -11,13 +12,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Minigun extends Prank {
 
-    public Minigun() {
-        super("minigun", "Minigun", "Makes the player shoot arrows like a minigun");
+    public Minigun(Victim victim) {
+        super(Pranks.MINIGUN, victim);
     }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-        if (!getBukkitPlayers().contains(event.getPlayer())) return;
+        if (!isTarget(event.getPlayer())) return;
         if (event.hasItem() && event.getItem().getType().equals(Material.BOW) && (event.getAction().equals(Action.RIGHT_CLICK_AIR) || event.getAction().equals(Action.RIGHT_CLICK_BLOCK))) {
             event.getPlayer().launchProjectile(Arrow.class, event.getPlayer().getEyeLocation().getDirection());
             new BukkitRunnable() {
@@ -37,12 +38,12 @@ public class Minigun extends Prank {
     }
 
     @Override
-    public void playerAdded(Victim player) {
+    public void onStart() {
 
     }
 
     @Override
-    public void playerRemoved(Victim player) {
+    public void onStop() {
 
     }
 

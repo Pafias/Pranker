@@ -9,11 +9,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FakeNpc {
 
@@ -44,24 +41,16 @@ public class FakeNpc {
         Bukkit.getOnlinePlayers().forEach(this::spawn);
     }
 
-    public CompletableFuture<Void> spawn(Player player) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
-        queueVisibilityTask(() -> {
-            if (viewers.contains(player)) {
-                future.complete(null);
-                return;
-            }
-            viewers.add(player);
+    public void spawn(Player player) {
+        if (viewers.contains(player))
+            return;
+        viewers.add(player);
 
-            packetHandler.addToTab(player, this);
-            packetHandler.spawnNpc(player, this);
-            Tasks.runLaterSync(60, () -> {
-                packetHandler.removeFromTab(player, this);
-            });
-
-            future.complete(null);
+        packetHandler.addToTab(player, this);
+        packetHandler.spawnNpc(player, this);
+        Tasks.runLaterSync(10, () -> {
+            packetHandler.removeFromTab(player, this);
         });
-        return future;
     }
 
     public void setSwimming(boolean swimming) {
@@ -73,38 +62,9 @@ public class FakeNpc {
     }
 
     public void destroy(Player player) {
-        queueVisibilityTask(() -> {
-            if (!viewers.contains(player)) return;
-            viewers.remove(player);
-            packetHandler.destroyNpc(player, this);
-        });
-    }
-
-    // Queue
-
-    private boolean queueRunning = false;
-    private final Queue<Runnable> visibilityTaskQueue = new ConcurrentLinkedQueue<>();
-
-    private void tryRunQueue() {
-        if (visibilityTaskQueue.isEmpty() || queueRunning) return;
-        queueRunning = true;
-        CompletableFuture.runAsync(() -> {
-                    while (!visibilityTaskQueue.isEmpty()) try {
-                        visibilityTaskQueue.remove().run();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    queueRunning = false;
-                })
-                .exceptionally(throwable -> {
-                    throwable.printStackTrace();
-                    return null;
-                });
-    }
-
-    private void queueVisibilityTask(Runnable runnable) {
-        visibilityTaskQueue.add(runnable);
-        tryRunQueue();
+        if (!viewers.contains(player)) return;
+        viewers.remove(player);
+        packetHandler.destroyNpc(player, this);
     }
 
 }

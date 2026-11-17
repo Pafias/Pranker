@@ -6,16 +6,15 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityTeleport;
-import me.pafias.pranker.utils.FakeNpc;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class PacketHandler1_21_3 extends PacketHandler1_20_2 {
 
     @Override
-    public void teleport(Player player, FakeNpc npc, Location location) {
+    public void teleportEntity(Player player, int id, Location location) {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityTeleport(
-                npc.getEntityId(),
+                id,
                 new EntityPositionData(
                         new Vector3d(
                                 location.getX(),
@@ -30,7 +29,7 @@ public class PacketHandler1_21_3 extends PacketHandler1_20_2 {
                 false
         ));
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityHeadLook(
-                npc.getEntityId(),
+                id,
                 location.getYaw()
         ));
     }

@@ -1,9 +1,11 @@
 package me.pafias.pranker.utils.packets;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityDataTypes;
 import com.github.retrooper.packetevents.protocol.entity.pose.EntityPose;
+import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
@@ -16,6 +18,9 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class PacketHandler1_17 implements PacketHandler {
 
@@ -87,6 +92,11 @@ public class PacketHandler1_17 implements PacketHandler {
     }
 
     @Override
+    public void destroyEntities(Player player, int... ids) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerDestroyEntities(ids));
+    }
+
+    @Override
     public void rotate(Player player, FakeNpc npc, float yaw, float pitch) {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityHeadLook(
                 npc.getEntityId(), yaw
@@ -106,8 +116,13 @@ public class PacketHandler1_17 implements PacketHandler {
 
     @Override
     public void teleport(Player player, FakeNpc npc, Location location) {
+        teleportEntity(player, npc.getEntityId(), location);
+    }
+
+    @Override
+    public void teleportEntity(Player player, int id, Location location) {
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityTeleport(
-                npc.getEntityId(),
+                id,
                 new Vector3d(
                         location.getX(),
                         location.getY(),
@@ -118,7 +133,7 @@ public class PacketHandler1_17 implements PacketHandler {
                 true
         ));
         PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityHeadLook(
-                npc.getEntityId(),
+                id,
                 location.getYaw()
         ));
     }
@@ -129,6 +144,58 @@ public class PacketHandler1_17 implements PacketHandler {
                 fakeNpc.getEntityId(),
                 Collections.singletonList(new EntityData<>(6, EntityDataTypes.ENTITY_POSE, swimming ? EntityPose.SWIMMING : EntityPose.STANDING))
         ));
+    }
+
+    @Override
+    public void spawnTNT(Player player, int id, UUID uuid, double x, double y, double z, int explodeDelayTicks) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerSpawnLivingEntity(
+                id,
+                uuid,
+                EntityTypes.TNT,
+                new com.github.retrooper.packetevents.protocol.world.Location(x, y, z, 0, 0),
+                0,
+                Vector3d.zero(),
+                Collections.singletonList(new EntityData<>(8, EntityDataTypes.INT, explodeDelayTicks))
+        ));
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityMetadata(
+                id,
+                Collections.singletonList(new EntityData<>(8, EntityDataTypes.INT, explodeDelayTicks))
+        ));
+    }
+
+    @Override
+    public void explosion(Player player, double x, double y, double z) {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerExplosion(
+                new Vector3d(
+                        x,
+                        y,
+                        z
+                ),
+                null
+        ));
+    }
+
+    @Override
+    public void spawnGuardianBeam(Player player, int id, UUID uuid, Location location, int targetId) {
+        final com.github.retrooper.packetevents.protocol.world.Location position = new com.github.retrooper.packetevents.protocol.world.Location(
+                location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch()
+        );
+        final List<EntityData<?>> metadata = Arrays.asList(
+                new EntityData<>(0, EntityDataTypes.BYTE, (byte) 0x20), // Invisible
+                new EntityData<>(5, EntityDataTypes.BOOLEAN, true), // No gravity
+                new EntityData<>(17, EntityDataTypes.INT, targetId) // Beam target
+        );
+        // Living entities got merged into the regular spawn packet in 1.19
+        if (PacketEvents.getAPI().getServerManager().getVersion().isOlderThan(ServerVersion.V_1_19))
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerSpawnLivingEntity(
+                    id, uuid, EntityTypes.GUARDIAN, position, location.getYaw(), Vector3d.zero(), metadata
+            ));
+        else
+            PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerSpawnEntity(
+                    id, Optional.of(uuid), EntityTypes.GUARDIAN, position.getPosition(),
+                    location.getPitch(), location.getYaw(), location.getYaw(), 0, Optional.of(Vector3d.zero())
+            ));
+        PacketEvents.getAPI().getPlayerManager().sendPacket(player, new WrapperPlayServerEntityMetadata(id, metadata));
     }
 
 }

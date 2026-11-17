@@ -1,5 +1,6 @@
 package me.pafias.pranker;
 
+import lombok.Getter;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -8,17 +9,8 @@ import java.util.UUID;
 
 public class PlayerManager {
 
-    private final Pranker plugin;
-
-    public PlayerManager(Pranker plugin) {
-        this.plugin = plugin;
-    }
-
+    @Getter
     private final Set<Victim> players = new HashSet<>();
-
-    public Set<Victim> getPlayers() {
-        return players;
-    }
 
     public Victim getPlayer(Player player) {
         return getPlayer(player.getUniqueId());

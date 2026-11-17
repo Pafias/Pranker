@@ -3,7 +3,7 @@ package me.pafias.pranker.listeners;
 import me.pafias.pranker.Pranker;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class JoinQuitListener implements Listener {
@@ -15,7 +15,7 @@ public class JoinQuitListener implements Listener {
     }
 
     @EventHandler
-    public void onLogin(PlayerLoginEvent event) {
+    public void onLogin(PlayerJoinEvent event) {
         plugin.getPlayerManager().addPlayer(event.getPlayer());
     }
 

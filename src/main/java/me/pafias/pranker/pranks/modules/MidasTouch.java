@@ -1,6 +1,7 @@
 package me.pafias.pranker.pranks.modules;
 
 import lombok.AllArgsConstructor;
+import me.pafias.pranker.pranks.Pranks;
 import lombok.Data;
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
@@ -9,64 +10,55 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MidasTouch extends Prank {
 
-    public MidasTouch() {
-        super("midastouch", "Midas Touch", "Turns everything the player touches into gold. (Client-sided)");
+    public MidasTouch(Victim victim) {
+        super(Pranks.MIDAS_TOUCH, victim);
     }
 
-    private final Map<Player, List<MidasChange>> changes = new HashMap<>();
+    private final List<MidasChange> changes = new ArrayList<>();
 
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
+        if (!isTarget(event.getPlayer())) return;
         Block block = event.getPlayer().getLocation().getBlock().getRelative(BlockFace.DOWN);
         if (block.isEmpty()) return;
         if (block.isLiquid()) return;
-        if (!getBukkitPlayers().contains(event.getPlayer())) return;
         BlockData oldData = block.getBlockData();
         BlockData newData = plugin.getServer().createBlockData(Material.GOLD_BLOCK);
         event.getPlayer().sendBlockChange(block.getLocation(), newData);
-        List<MidasChange> list = changes.getOrDefault(event.getPlayer(), new ArrayList<>());
-        list.add(new MidasChange(block.getLocation(), oldData, newData));
-        changes.put(event.getPlayer(), list);
+        changes.add(new MidasChange(block.getLocation(), oldData, newData));
     }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-        if (!getBukkitPlayers().contains(event.getPlayer())) return;
+        if (!isTarget(event.getPlayer())) return;
         Block target = event.getClickedBlock() != null ? event.getClickedBlock() : event.getPlayer().getTargetBlockExact(3);
         if (target == null || target.isLiquid()) return;
         BlockData oldData = target.getBlockData();
         BlockData newData = plugin.getServer().createBlockData(Material.GOLD_BLOCK);
         event.getPlayer().sendBlockChange(target.getLocation(), newData);
-        List<MidasChange> list = changes.getOrDefault(event.getPlayer(), new ArrayList<>());
-        list.add(new MidasChange(target.getLocation(), oldData, newData));
-        changes.put(event.getPlayer(), list);
+        changes.add(new MidasChange(target.getLocation(), oldData, newData));
     }
 
     @Override
-    public void playerAdded(Victim player) {
+    public void onStart() {
 
     }
 
     @Override
-    public void playerRemoved(Victim player) {
-        if (changes.containsKey(player.getPlayer())) {
-            changes.get(player.getPlayer()).forEach(change -> {
-                player.getPlayer().sendBlockChange(change.getTarget(), change.getOldData());
-            });
-            changes.remove(player.getPlayer());
+    public void onStop() {
+        for (MidasChange change : changes) {
+            getPlayer().sendBlockChange(change.getTarget(), change.getOldData());
         }
+        changes.clear();
     }
 
     @Data

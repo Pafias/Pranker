@@ -4,28 +4,29 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChangeGameState;
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
+import me.pafias.pranker.pranks.Pranks;
 
 public class Credits extends Prank {
 
-    public Credits() {
-        super("credits", "Credits", "Roll credits");
+    public Credits(Victim victim) {
+        super(Pranks.CREDITS, victim);
     }
 
     @Override
-    public void playerAdded(Victim player) {
-        PacketEvents.getAPI().getPlayerManager().sendPacket(player.getPlayer(), new WrapperPlayServerChangeGameState(
+    public void onStart() {
+        PacketEvents.getAPI().getPlayerManager().sendPacket(getPlayer(), new WrapperPlayServerChangeGameState(
                 WrapperPlayServerChangeGameState.Reason.WIN_GAME,
                 1
         ));
         try {
-            removePlayer(player);
+            plugin.getPrankManager().removePlayer(getVictim(), getType());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-    public void playerRemoved(Victim player) {
+    public void onStop() {
     }
 
 }

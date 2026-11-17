@@ -5,9 +5,9 @@ import me.pafias.pranker.utils.FakeNpc;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public interface PacketHandler {
+import java.util.UUID;
 
-    // Essential
+public interface PacketHandler {
 
     void addToTab(Player player, FakeNpc npc);
 
@@ -17,7 +17,7 @@ public interface PacketHandler {
 
     void destroyNpc(Player player, FakeNpc... npc);
 
-    // Extras
+    void destroyEntities(Player player, int... ids);
 
     void rotate(Player player, FakeNpc npc, float yaw, float pitch);
 
@@ -25,6 +25,14 @@ public interface PacketHandler {
 
     void teleport(Player player, FakeNpc npc, Location location);
 
+    void teleportEntity(Player player, int id, Location location);
+
     void setSwimming(Player player, FakeNpc fakeNpc, boolean swimming);
+
+    void spawnTNT(Player player, int id, UUID uuid, double x, double y, double z, int explodeDelayTicks);
+
+    void explosion(Player player, double x, double y, double z);
+
+    void spawnGuardianBeam(Player player, int id, UUID uuid, Location location, int targetId);
 
 }

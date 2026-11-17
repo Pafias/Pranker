@@ -1,55 +1,46 @@
 package me.pafias.pranker.pranks.modules;
 
-import com.mojang.authlib.GameProfile;
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
+import me.pafias.pranker.pranks.Pranks;
+import me.pafias.putils.Tasks;
+import me.pafias.putils.builders.GameProfileBuilder;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public class UpsideDown extends Prank {
 
-    public UpsideDown() {
-        super("upsidedown", "Upside Down", "Turns the player upside down (Unstable, may not work)");
+    public UpsideDown(Victim victim) {
+        super(Pranks.UPSIDE_DOWN, victim);
     }
 
-    private final Map<UUID, GameProfile> originalProfiles = new HashMap<>();
+    private Object originalProfile;
 
     @Override
-    public void playerAdded(Victim player) {
-        try {
-            Class p = player.getPlayer().getClass();
-            GameProfile op = (GameProfile) p.getDeclaredMethod("getProfile").invoke(player.getPlayer());
-            originalProfiles.put(player.getPlayer().getUniqueId(), op);
-            GameProfile dinnerbone = new GameProfile(op.getId(), "Dinnerbone");
-            setProfile(player.getPlayer(), dinnerbone);
-            // TODO nametag
-            hideAndShow(player.getPlayer());
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    setProfile(player.getPlayer(), op);
-                }
-            }.runTaskLater(plugin, 5);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+    public void onStart() throws Exception {
+        Class<?> p = getPlayer().getClass();
+        Object op = p.getDeclaredMethod("getProfile").invoke(getPlayer());
+        originalProfile = op;
+        Object dinnerbone = GameProfileBuilder.fromHandle(op).setName("Dinnerbone").build();
+        setProfile(getPlayer(), dinnerbone);
+        hideAndShow(getPlayer());
+        Tasks.runLaterSync(5, () -> setProfile(getPlayer(), op));
+    }
+
+    @Override
+    public void onStop() {
+        if (originalProfile != null) {
+            setProfile(getPlayer(), originalProfile);
+            hideAndShow(getPlayer());
+            originalProfile = null;
         }
     }
 
-    @Override
-    public void playerRemoved(Victim player) {
-        setProfile(player.getPlayer(), originalProfiles.get(player.getPlayer().getUniqueId()));
-        hideAndShow(player.getPlayer());
-    }
-
-    private void setProfile(Player player, GameProfile profile) {
+    private void setProfile(Player player, Object profile) {
         try {
             Object el = player.getClass().getMethod("getHandle").invoke(player);
-            Class eh = el.getClass().getSuperclass();
+            Class<?> eh = el.getClass().getSuperclass();
             Field[] fields = eh.getDeclaredFields();
             Field field = null;
             for (Field f : fields)
@@ -68,18 +59,12 @@ public class UpsideDown extends Prank {
     }
 
     private void hideAndShow(Player player) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getServer().getOnlinePlayers().forEach(p -> p.hidePlayer(player));
-            }
-        }.runTask(plugin);
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                plugin.getServer().getOnlinePlayers().forEach(p -> p.showPlayer(player));
-            }
-        }.runTaskLater(plugin, 2);
+        Tasks.runSync(() -> {
+            plugin.getServer().getOnlinePlayers().forEach(p -> p.hidePlayer(player));
+        });
+        Tasks.runLaterSync(2, () -> {
+            plugin.getServer().getOnlinePlayers().forEach(p -> p.showPlayer(player));
+        });
     }
 
 

@@ -2,6 +2,7 @@ package me.pafias.pranker.pranks.modules;
 
 import me.pafias.pranker.Victim;
 import me.pafias.pranker.pranks.Prank;
+import me.pafias.pranker.pranks.Pranks;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
@@ -12,47 +13,52 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class Dance extends Prank {
 
-    public Dance() {
-        super("dance", "Dance", "Forces the player to dance :catvibe: (Fortnite boogie bomb)");
-        balls = new HashMap<>();
-        tasks = new HashMap<>();
+    public Dance(Victim victim) {
+        super(Pranks.DANCE, victim);
+        random = new Random();
     }
 
-    Map<UUID, ArmorStand> balls;
-    Map<UUID, BukkitTask> tasks;
+    private final Random random;
+    private ArmorStand ball;
+    private BukkitTask task;
 
     @Override
-    public void playerAdded(Victim player) {
-        player.getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 1000000, 3, false, false, false));
-        ArmorStand armorStand = (ArmorStand) player.getPlayer().getWorld().spawnEntity(player.getPlayer().getLocation().add(0, 3, 0), EntityType.ARMOR_STAND);
-        balls.put(player.getPlayer().getUniqueId(), armorStand);
-        armorStand.setVisible(false);
-        armorStand.setGravity(false);
-        armorStand.setSmall(false);
+    public void onStart() {
+        getPlayer().addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS, 1000000, 3, false, false, false));
+        ball = (ArmorStand) getPlayer().getWorld().spawnEntity(getPlayer().getLocation().add(0, 3, 0), EntityType.ARMOR_STAND);
+        ball.setVisible(false);
+        ball.setGravity(false);
+        ball.setSmall(false);
         List<Material> glasses = Arrays.stream(Material.values()).filter(m -> m.name().contains("STAINED_GLASS") && !m.name().contains("PANE") && !m.name().contains("LEGACY")).toList();
-        armorStand.setHelmet(new ItemStack(glasses.get(new Random().nextInt(glasses.size()))));
-        tasks.put(player.getPlayer().getUniqueId(), new BukkitRunnable() {
+        ball.setHelmet(new ItemStack(glasses.get(new Random().nextInt(glasses.size()))));
+        task = new BukkitRunnable() {
             int time = 200;
             int step = 0;
             boolean drum;
 
             @Override
             public void run() {
-                armorStand.setHeadPose(armorStand.getHeadPose().add(0, 0.2, 0));
-                armorStand.teleport(player.getPlayer().getLocation().add(0, 3, 0));
-                armorStand.setHelmet(new ItemStack(glasses.get(new Random().nextInt(glasses.size()))));
-                Location loc = armorStand.getEyeLocation();
-                loc.getWorld().spawnParticle(Particle.SPELL, loc, 64);
-                loc.getWorld().spawnParticle(Particle.SPELL_INSTANT, loc, 64);
-                loc.getWorld().spawnParticle(Particle.NOTE, loc.clone().add((new Random().nextDouble() - 0.5) * 4, (new Random().nextDouble() - 0.5) * 3, (new Random().nextDouble() - 0.5) * 4), 1);
-                loc.getWorld().playSound(loc, Sound.BLOCK_NOTE_BLOCK_GUITAR, 0.7f, new Random().nextFloat());
+                if (ball == null || ball.isDead()) {
+                    cancel();
+                    return;
+                }
+                ball.setHeadPose(ball.getHeadPose().add(0, 0.2, 0));
+                ball.teleport(getPlayer().getLocation().add(0, 3, 0));
+                ball.setHelmet(new ItemStack(glasses.get(random.nextInt(glasses.size()))));
+                Location loc = ball.getEyeLocation();
+                loc.getWorld().spawnParticle(Particle.ENTITY_EFFECT, loc, 64, 0, 0, 0, 1, Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)));
+                loc.getWorld().spawnParticle(Particle.INSTANT_EFFECT, loc, 64, 0, 0, 0, 1, new Particle.Spell(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)), 1.0f));
+                loc.getWorld().spawnParticle(Particle.NOTE, loc.clone().add((random.nextDouble() - 0.5) * 4, (random.nextDouble() - 0.5) * 3, (random.nextDouble() - 0.5) * 4), 1);
+                loc.getWorld().playSound(loc, Sound.BLOCK_NOTE_BLOCK_GUITAR, 0.7f, random.nextFloat());
                 if (time % 5 == 0) {
-                    armorStand.getWorld().playSound(armorStand.getLocation(), drum ? Sound.BLOCK_NOTE_BLOCK_BASEDRUM : Sound.BLOCK_NOTE_BLOCK_SNARE, 0.7f, 0.5f);
-                    player.getPlayer().setSneaking(drum);
+                    ball.getWorld().playSound(ball.getLocation(), drum ? Sound.BLOCK_NOTE_BLOCK_BASEDRUM : Sound.BLOCK_NOTE_BLOCK_SNARE, 0.7f, 0.5f);
+                    getPlayer().setSneaking(drum);
                     drum = !drum;
                 }
                 step++;
@@ -72,14 +78,28 @@ public class Dance extends Prank {
                     float ratio = i * length / 80.0F;
                     Vector v = direction.clone().multiply(ratio);
                     rotateVector(v, rotation, rotation, rotation);
-                    loc.getWorld().spawnParticle(Particle.REDSTONE, loc.add(v), 128, new Random().nextFloat(), new Random().nextFloat(), new Random().nextFloat(), new Particle.DustOptions(Color.fromRGB(new Random().nextInt(255), new Random().nextInt(255), new Random().nextInt(255)), 1));
+                    loc.getWorld().spawnParticle(Particle.DUST, loc.add(v), 128, random.nextFloat(), random.nextFloat(), random.nextFloat(), new Particle.DustOptions(Color.fromRGB(random.nextInt(255), random.nextInt(255), random.nextInt(255)), 1));
                     loc.subtract(v);
                 }
                 time--;
                 if (time < 0)
                     time = 200;
             }
-        }.runTaskTimer(plugin, 1, 1));
+        }.runTaskTimer(plugin, 1, 1);
+    }
+
+    @Override
+    public void onStop() {
+        getPlayer().removePotionEffect(PotionEffectType.SLOWNESS);
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
+        getPlayer().setSneaking(false);
+        if (ball != null) {
+            ball.remove();
+            ball = null;
+        }
     }
 
     private Vector rotateAroundAxisX(Vector v, double angle) {
@@ -113,14 +133,6 @@ public class Dance extends Prank {
         return v;
     }
 
-    @Override
-    public void playerRemoved(Victim player) {
-        player.getPlayer().removePotionEffect(PotionEffectType.SLOW);
-        tasks.get(player.getPlayer().getUniqueId()).cancel();
-        tasks.remove(player.getPlayer().getUniqueId());
-        player.getPlayer().setSneaking(false);
-        balls.get(player.getPlayer().getUniqueId()).remove();
-        balls.remove(player.getPlayer().getUniqueId());
-    }
 
 }
+
