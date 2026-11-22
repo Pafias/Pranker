@@ -11,7 +11,26 @@ commands:
     aliases: [ ]
     description: Main prank command
     permission: prank
+  meow:
+    usage: /meow <player>
+    aliases: [ ]
+    description: Meow at another player
+    permission: meow.perm
+  purr:
+    usage: /purr [volume] [seconds]
+    aliases: [ ]
+    description: Toggle purring at nearby players
+    permission: meow.purr
 permissions:
   prank:
     description: Permission to use the prank command
+    default: op
+  meow.perm:
+    description: Permission to use the meow command
+    default: op
+  meow.purr:
+    description: Permission to use the purr command
+    default: op
+  meow.bypass:
+    description: Bypasses the meow command cooldown and range limit
     default: op

@@ -3,7 +3,9 @@ package me.pafias.pranker;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import lombok.Getter;
+import me.pafias.pranker.commands.MeowCommand;
 import me.pafias.pranker.commands.PrankCommand;
+import me.pafias.pranker.commands.PurrCommand;
 import me.pafias.pranker.listeners.JoinQuitListener;
 import me.pafias.pranker.pranks.PrankManager;
 import me.pafias.pranker.utils.packets.*;
@@ -53,6 +55,8 @@ public final class Pranker extends JavaPlugin {
         playerManager = new PlayerManager();
         prankManager = new PrankManager(plugin);
         getCommand("prank").setExecutor(new PrankCommand(plugin));
+        getCommand("meow").setExecutor(new MeowCommand());
+        getCommand("purr").setExecutor(new PurrCommand(plugin));
     }
 
     @Override
