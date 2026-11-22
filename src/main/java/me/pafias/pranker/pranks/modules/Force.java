@@ -74,6 +74,8 @@ public class Force extends Prank {
     private static final double PULL = 0.5;
     private static final double MAX_SPEED = 3;
     private static final double THROW_SPEED = 3;
+    // Longest round trip we compensate for (a full second); beyond that the lag is beyond saving anyway
+    private static final int MAX_LATENCY_TICKS = 20;
     // Vanilla survival entity reach (plus some slack); the raised range only counts for the force itself
     private static final double NORMAL_REACH = 3.5;
     // Big enough that the player's eye stays inside even with the client lagging the box's position a few ticks
@@ -94,6 +96,9 @@ public class Force extends Prank {
     private boolean hadAllowFlight;
     // Thrown/dropped entities don't take fall damage on their landing. Value is the tick they were let go
     private final Map<UUID, Integer> falling = new HashMap<>();
+    // Velocity commands sent to the grabbed player that their client may not have acted on yet, by tick.
+    // Players are client-authoritative, so their server position is one round trip behind their real position
+    private final Map<Integer, Vector> pendingPull = new HashMap<>();
     private BukkitTask task;
     private final NamespacedKey reachKey = new NamespacedKey(plugin, "force_reach");
 
@@ -208,6 +213,7 @@ public class Force extends Prank {
 
     private void tick() {
         final int now = Bukkit.getCurrentTick();
+        pendingPull.keySet().removeIf(tick -> tick <= now - MAX_LATENCY_TICKS);
         falling.entrySet().removeIf(entry -> {
             final Entity entity = Bukkit.getEntity(entry.getKey());
             return entity == null || (entity.isOnGround() && now - entry.getValue() > 5);
@@ -230,18 +236,47 @@ public class Force extends Prank {
 
         final Location eye = holder.getEyeLocation();
         final Vector target = eye.toVector().add(eye.getDirection().multiply(distance));
-        final Vector velocity = target.subtract(center(grabbed).toVector()).multiply(PULL);
+        final Vector position = predictedPosition(center(grabbed).toVector(), now);
+        final Vector velocity = target.subtract(position).multiply(PULL);
         if (velocity.length() > MAX_SPEED)
             velocity.normalize().multiply(MAX_SPEED);
         grabbed.setVelocity(velocity);
+        pendingPull.put(now, velocity.clone());
         grabbed.setFallDistance(0);
         grabbed.getWorld().spawnParticle(Particle.PORTAL, center(grabbed), 6, 0.3, 0.5, 0.3, 0.5);
+    }
+
+    /**
+     * Where the grabbed player's client will be by the time a velocity sent now reaches it.
+     * <p>
+     * Player movement is client-authoritative, so the server only knows where they were one round trip ago. Feeding
+     * that stale position back into a velocity command that itself takes a round trip to arrive makes the pull
+     * oscillate, which is why high-ping players orbit the target instead of being pulled into it. Starting from the
+     * server position, add every command sent during that round trip to estimate where the client will be when the
+     * new command lands.
+     * <p>
+     * Mobs are server-authoritative, so their position is already current.
+     */
+    private Vector predictedPosition(Vector serverPosition, int now) {
+        if (!(grabbed instanceof Player player))
+            return serverPosition;
+        final int roundTrip = Math.min(MAX_LATENCY_TICKS, (int) Math.round(player.getPing() / 50.0));
+        if (roundTrip < 2)
+            return serverPosition;
+        final Vector predicted = serverPosition.clone();
+        for (int tick = now - roundTrip + 1; tick < now; tick++) {
+            final Vector command = pendingPull.get(tick);
+            if (command != null)
+                predicted.add(command);
+        }
+        return predicted;
     }
 
     private void grab(LivingEntity entity) {
         if (entity == null) return;
         final Player holder = getPlayer();
         grabbed = entity;
+        pendingPull.clear();
         distance = Math.clamp(center(entity).distance(holder.getEyeLocation()), MIN_DISTANCE, RANGE);
         if (entity instanceof Player player) {
             hadAllowFlight = player.getAllowFlight();
@@ -260,6 +295,7 @@ public class Force extends Prank {
         if (grabbed == null) return;
         final LivingEntity entity = grabbed;
         grabbed = null;
+        pendingPull.clear();
         if (entity instanceof Player player && player.isOnline() && !hadAllowFlight) {
             player.setFlying(false);
             player.setAllowFlight(false);

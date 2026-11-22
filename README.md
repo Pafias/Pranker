@@ -21,6 +21,18 @@ specified prank on the player
 
 Multiple pranks can be applied to a player. Pranks will be stopped when the player logs out
 
+**/meow \<player\>**
+
+Meows at another player, who hears it too. Requires the `meow.perm` permission, has a 30 second cooldown, and only
+reaches players within 10 blocks. Players with `meow.bypass` ignore the cooldown and range limit.
+
+**/purr [volume] [seconds]**
+
+Toggles purring on and off. Requires the `meow.purr` permission. While purring, one purr is played every 30 seconds
+by default and is only heard by players within 5 blocks. The volume defaults to `0.15` and can be set from `0` to `1`,
+and the second argument sets the interval in seconds. Running `/purr [volume] [seconds]` while already purring changes
+those settings; running plain `/purr` stops it.
+
 # Overview of the pranks
 
 *More prank ideas are welcome :)*
